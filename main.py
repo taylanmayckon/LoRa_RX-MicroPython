@@ -3,17 +3,17 @@ from sx127x import SX127x
 import time
 import struct
 
-spi = SPI(1, baudrate=5000000, polarity=0, phase=0, sck=Pin(4), mosi=Pin(3), miso=Pin(2))
+spi = SPI(1, baudrate=5000000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19), miso=Pin(16))
 
-cs = Pin(5, Pin.OUT)
-reset = Pin(6, Pin.OUT)
-irq = Pin(7, Pin.IN)
+cs = Pin(17, Pin.OUT)
+reset = Pin(20, Pin.OUT)
+irq = Pin(8, Pin.IN)
 
 lora = SX127x(spi, cs, reset, irq, 
               frequency=915E6,   
               bandwidth=125E3,
               spreading_factor=7,
-              coding_rate=5,
+              coding_rate=1,
               preamble_length=8,
               tx_power=14)
 
