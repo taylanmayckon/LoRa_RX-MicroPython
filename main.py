@@ -3,27 +3,39 @@ from sx127x import SX127x
 import time
 import struct
 
-spi = SPI(1, baudrate=5000000, polarity=0, phase=0, sck=Pin(18), mosi=Pin(19), miso=Pin(16))
+lora_parameters = {
+    'frequency': 915E6,
+    'bandwidth':125E3,
+    'spreading_factor': 7,
+    'coding_rate': 1,
+    'preamble_length': 8,
+    'tx_power': 14
+}
 
-cs = Pin(17, Pin.OUT)
-reset = Pin(20, Pin.OUT)
-irq = Pin(8, Pin.IN)
+lora_pins = {
+    'dio_0':8,
+    'ss':17,
+    'reset':20,
+    'sck':18,
+    'miso':16,
+    'mosi':19,
+}
 
-lora = SX127x(spi, cs, reset, irq, 
-              frequency=915E6,   
-              bandwidth=125E3,
-              spreading_factor=7,
-              coding_rate=1,
-              preamble_length=8,
-              tx_power=14)
+lora_spi = SPI(0, baudrate=5000000, polarity=0, phase=0, 
+               bits=8, firstbit=SPI.MSB,
+               sck=Pin(lora_pins['sck'], Pin.OUT, Pin.PULL_DOWN),
+               mosi=Pin(lora_pins['mosi'], Pin.OUT, Pin.PULL_UP),
+               miso=Pin(lora_pins['miso'], Pin.IN, Pin.PULL_UP))
+
+lora = SX127x(lora_spi, pins=lora_pins, parameters=lora_parameters)
 
 print("LoRa RX iniciado...")
 
 
 # Loop principal
 while True:
-    if lora.received_packet():
-        payload = lora.read_payload()
+    if lora.receivedPacket():
+        payload = lora.readPayload()
 
         print("Payload bruto:\t", payload)
         print("Tamanho do payload:\t", len(payload))
@@ -35,6 +47,12 @@ while True:
         print("Umidade AHT20:\t{:.2f} %".format(humi_aht20))
         print("Temperatura BMP280:\t{:.2f} °C".format(temp_bmp280))
         print("Pressão BMP280:\t{:.2f} hPa".format(press_bmp280))
+        print("-------------------------------")
+    else:
+        payload = lora.readPayload()
+        print("Erro no recebimento!")
+        print("Payload bruto:\t", payload)
+        print("Tamanho do payload:\t", len(payload))
         print("-------------------------------")
 
     time.sleep(1)
